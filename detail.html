@@ -10,6 +10,21 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="./js/common.js"></script>
     <script type="text/javascript" src="./js/swiper.js"></script>
+    <style>
+        /* Google redirect popup */
+        .cf-popup{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
+        .cf-popup.is-active{display:flex;}
+        .cf-popup .cf-dimmed{position:absolute;inset:0;background:rgba(0,0,0,0.5);}
+        .cf-popup .cf-box{position:relative;width:100%;max-width:320px;padding:28px 20px 20px;border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.15);text-align:center;}
+        .cf-popup .cf-box .cf-title{font-size:17px;font-weight:700;color:#232323;line-height:1.4;}
+        .cf-popup .cf-box .cf-desc{margin-top:8px;font-size:13px;color:#666;line-height:1.5;}
+        .cf-popup .cf-box .cf-btns{display:flex;gap:8px;margin-top:22px;}
+        .cf-popup .cf-box .cf-btns button{flex:1;height:46px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:0;}
+        .cf-popup .cf-box .cf-btns .cf-close{background:#f2f2f2;color:#555;}
+        .cf-popup .cf-box .cf-btns .cf-go{background:#8D5BFD;color:#fff;}
+        .cf-popup .cf-box .cf-btns .cf-close:hover{background:#e8e8e8;}
+        .cf-popup .cf-box .cf-btns .cf-go:hover{background:#7a48ea;}
+    </style>
 </head>
 <body>
 <div id="wrapper">
@@ -48,7 +63,7 @@
                         </div>
                     </div>
                     <div class="info-bottom">
-                        <a href="#" class="btn-link btn-google">
+                        <a href="javascript:;" class="btn-link btn-google" data-cf-target="maps">
                             <div class="ico"><img src="./img/google.svg"></div>
                             <div class="txt">
                                 <span class="label">구글 평점 4.2</span>
@@ -272,19 +287,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="result">
-                        <div class="result-top">
-                            <div class="tit"><strong>도쿄 지역 호텔 리뷰를 수집하고 있어요.</strong></div>
-                            <div class="txt">충분한 데이터가 쌓이면 알려드릴게요!</div>
-                            <div class="btn"><a href="#"><img src="./img/alarm.svg"><span>분석 완료 시 알림 받기</span></a></div>
-                        </div>
-                        <div class="result-bottom">
-                            <div class="info"><strong>3개월 간</strong> 청결, 위생 리뷰가 <br><span>안정적인 수준</span>을 보이고 있어요!</div>
-                            <div class="icon">
-                                <img src="./img/up.svg" alt="추이 그래프">
-                            </div>
-                        </div>
-                    </div>
                     <div class="summary">
                         <div class="sub-title">위생경보 핵심 요약</div>
                         <div class="table">
@@ -383,12 +385,6 @@
                             </ul>
                         </div>
                         <div class="more"><a href="#"><strong>위생 경보</strong> 리뷰 전체보기</a></div>
-                        <br>
-                        <!-- member not -->
-                        <div class="none">
-                            <div class="btn"><a href="#"><img src="./img/kakao.svg"> <span>3초만에 로그인하고 리뷰 보기</span></a></div>
-                            <div class="bg"><img src="./img/blind.png"></div>
-                        </div>
                     </div>
                 </div>
                 <div class="sect recent">
@@ -511,11 +507,69 @@
                     </div>
                 </div>
                 <div class="button">
-                    <a href="#" class="btn-reservate">🔥 최저가로 예약하기</a>
+                    <a href="javascript:;" class="btn-reservate" data-cf-target="hotels">🔥 최저가로 예약하기</a>
+                </div>
+
+                <!-- Google redirect popup -->
+                <div class="cf-popup" id="cfPopup" role="dialog" aria-modal="true" aria-labelledby="cfPopupTitle">
+                    <div class="cf-dimmed" data-cf-dismiss></div>
+                    <div class="cf-box">
+                        <div class="cf-title" id="cfPopupTitle">구글맵으로 이동할까요?</div>
+                        <div class="cf-desc">외부 사이트로 이동합니다.<br>새 탭에서 열립니다.</div>
+                        <div class="cf-btns">
+                            <button type="button" class="cf-close" data-cf-dismiss>닫기</button>
+                            <button type="button" class="cf-go">이동하기</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <script>
                 $(document).ready(function () {
+                    // === Google 이동 팝업 ===
+                    // 현재 호텔명 (퍼블리싱 모킹: 고정값)
+                    var HOTEL_NAME_KO = '호텔 로즈가든 신주쿠';
+                    var HOTEL_QUERY = encodeURIComponent(HOTEL_NAME_KO);
+                    // 구글맵(리뷰/평점): 호텔 검색 결과
+                    var GOOGLE_MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=' + HOTEL_QUERY;
+                    // 구글 호텔(최저가): 해당 호텔 최저가 조회
+                    var GOOGLE_HOTELS_URL = 'https://www.google.com/travel/search?q=' + HOTEL_QUERY;
+
+                    var $cfPopup = $('#cfPopup');
+                    var pendingUrl = '';
+
+                    function openCfPopup(url, titleText){
+                        pendingUrl = url;
+                        if (titleText) $cfPopup.find('#cfPopupTitle').text(titleText);
+                        else $cfPopup.find('#cfPopupTitle').text('구글맵으로 이동할까요?');
+                        $cfPopup.addClass('is-active');
+                    }
+                    function closeCfPopup(){
+                        $cfPopup.removeClass('is-active');
+                        pendingUrl = '';
+                    }
+
+                    // 구글 평점/리뷰 버튼 → 구글맵
+                    $(document).on('click', '.btn-google', function(e){
+                        e.preventDefault();
+                        openCfPopup(GOOGLE_MAPS_URL, '구글맵으로 이동할까요?');
+                    });
+                    // 최저가 예약 버튼 → 구글 호텔(최저가)
+                    $(document).on('click', '.btn-reservate', function(e){
+                        e.preventDefault();
+                        openCfPopup(GOOGLE_HOTELS_URL, '구글 호텔로 이동할까요?');
+                    });
+
+                    // 팝업 버튼
+                    $cfPopup.on('click', '[data-cf-dismiss]', closeCfPopup);
+                    $cfPopup.on('click', '.cf-go', function(){
+                        if (pendingUrl) window.open(pendingUrl, '_blank', 'noopener');
+                        closeCfPopup();
+                    });
+                    // ESC로 닫기
+                    $(document).on('keydown', function(e){
+                        if (e.key === 'Escape' && $cfPopup.hasClass('is-active')) closeCfPopup();
+                    });
+
                     // 위시리스트 버튼
                     $('.btn-wish').on('click', function(e) {
                         e.preventDefault();
