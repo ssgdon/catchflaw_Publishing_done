@@ -179,6 +179,40 @@
                         console.log(filterValue + " 필터 선택됨");
                     });
 
+                    // 대분류 탭(tabs-item) 활성 토글
+                    $('.tabs-item').on('click', function(e){
+                        e.preventDefault();
+                        $(this).closest('.swiper-wrapper').find('.on').removeClass('on');
+                        $(this).addClass('on');
+                    });
+
+                    // === URL 쿼리 파라미터로 초기 필터 세팅 ===
+                    (function applyQueryFilter(){
+                        function getParam(name){
+                            var m = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+                            return m ? decodeURIComponent(m[1]) : '';
+                        }
+                        var cat = getParam('cat');       // 위생경보/시설사기단/오감지옥/안전그림자
+                        var status = getParam('status'); // 심각/경고/정상
+                        function norm(s){ return (s || '').replace(/\s+/g, ''); }
+                        if (cat){
+                            $('.tabs-item').each(function(){
+                                if (norm($(this).text()) === norm(cat)){
+                                    $(this).closest('.swiper-wrapper').find('.on').removeClass('on');
+                                    $(this).addClass('on');
+                                }
+                            });
+                        }
+                        if (status){
+                            $('.category-btn').each(function(){
+                                var first = $(this).text().split(' ')[0];
+                                if (first === status){
+                                    $(this).addClass('on').siblings().removeClass('on');
+                                }
+                            });
+                        }
+                    })();
+
                     // 드롭다운 토글
                     $('.dropdown-btn').on('click', function(e) {
                         e.stopPropagation(); // 클릭 이벤트가 상위로 퍼지는 것을 방지

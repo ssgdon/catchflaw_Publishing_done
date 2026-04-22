@@ -10,21 +10,6 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="./js/common.js"></script>
     <script type="text/javascript" src="./js/swiper.js"></script>
-    <style>
-        /* Google redirect popup */
-        .cf-popup{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
-        .cf-popup.is-active{display:flex;}
-        .cf-popup .cf-dimmed{position:absolute;inset:0;background:rgba(0,0,0,0.5);}
-        .cf-popup .cf-box{position:relative;width:100%;max-width:320px;padding:28px 20px 20px;border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.15);text-align:center;}
-        .cf-popup .cf-box .cf-title{font-size:17px;font-weight:700;color:#232323;line-height:1.4;}
-        .cf-popup .cf-box .cf-desc{margin-top:8px;font-size:13px;color:#666;line-height:1.5;}
-        .cf-popup .cf-box .cf-btns{display:flex;gap:8px;margin-top:22px;}
-        .cf-popup .cf-box .cf-btns button{flex:1;height:46px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:0;}
-        .cf-popup .cf-box .cf-btns .cf-close{background:#f2f2f2;color:#555;}
-        .cf-popup .cf-box .cf-btns .cf-go{background:#8D5BFD;color:#fff;}
-        .cf-popup .cf-box .cf-btns .cf-close:hover{background:#e8e8e8;}
-        .cf-popup .cf-box .cf-btns .cf-go:hover{background:#7a48ea;}
-    </style>
 </head>
 <body>
 <div id="wrapper">
@@ -63,7 +48,7 @@
                         </div>
                     </div>
                     <div class="info-bottom">
-                        <a href="javascript:;" class="btn-link btn-google" data-cf-target="maps">
+                        <a href="javascript:;" class="btn-link btn-google" data-cf-google="maps">
                             <div class="ico"><img src="./img/google.svg"></div>
                             <div class="txt">
                                 <span class="label">구글 평점 4.2</span>
@@ -507,68 +492,79 @@
                     </div>
                 </div>
                 <div class="button">
-                    <a href="javascript:;" class="btn-reservate" data-cf-target="hotels">🔥 최저가로 예약하기</a>
-                </div>
-
-                <!-- Google redirect popup -->
-                <div class="cf-popup" id="cfPopup" role="dialog" aria-modal="true" aria-labelledby="cfPopupTitle">
-                    <div class="cf-dimmed" data-cf-dismiss></div>
-                    <div class="cf-box">
-                        <div class="cf-title" id="cfPopupTitle">구글맵으로 이동할까요?</div>
-                        <div class="cf-desc">외부 사이트로 이동합니다.<br>새 탭에서 열립니다.</div>
-                        <div class="cf-btns">
-                            <button type="button" class="cf-close" data-cf-dismiss>닫기</button>
-                            <button type="button" class="cf-go">이동하기</button>
-                        </div>
-                    </div>
+                    <a href="javascript:;" class="btn-reservate" data-cf-google="hotels">🔥 최저가로 예약하기</a>
                 </div>
             </div>
             <script>
                 $(document).ready(function () {
-                    // === Google 이동 팝업 ===
-                    // 현재 호텔명 (퍼블리싱 모킹: 고정값)
-                    var HOTEL_NAME_KO = '호텔 로즈가든 신주쿠';
-                    var HOTEL_QUERY = encodeURIComponent(HOTEL_NAME_KO);
-                    // 구글맵(리뷰/평점): 호텔 검색 결과
-                    var GOOGLE_MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=' + HOTEL_QUERY;
-                    // 구글 호텔(최저가): 해당 호텔 최저가 조회
-                    var GOOGLE_HOTELS_URL = 'https://www.google.com/travel/search?q=' + HOTEL_QUERY;
+                    // === 인터랙션: 태그 / 차트얼굴 / 리뷰 버튼 ===
+                    // 태그 텍스트 ↔ 탭 텍스트 매핑 (공백 차이 정규화)
+                    function norm(t){ return (t || '').replace(/\s+/g, ''); }
 
-                    var $cfPopup = $('#cfPopup');
-                    var pendingUrl = '';
-
-                    function openCfPopup(url, titleText){
-                        pendingUrl = url;
-                        if (titleText) $cfPopup.find('#cfPopupTitle').text(titleText);
-                        else $cfPopup.find('#cfPopupTitle').text('구글맵으로 이동할까요?');
-                        $cfPopup.addClass('is-active');
+                    function activateRiskTab(name){
+                        var target = norm(name);
+                        var $hit = null;
+                        $('.sect.analysis .tabs .tabs-item').each(function(){
+                            var txt = norm($(this).find('span').text());
+                            if (txt === target) $hit = $(this);
+                        });
+                        if ($hit && $hit.length){
+                            $hit.closest('.swiper-wrapper').find('.on').removeClass('on');
+                            $hit.addClass('on');
+                        }
+                        // 분석 섹션으로 스크롤
+                        var $target = $('.sect.analysis');
+                        if ($target.length){
+                            $('html, body').stop().animate({
+                                scrollTop: $target.offset().top - 20
+                            }, 450);
+                        }
                     }
-                    function closeCfPopup(){
-                        $cfPopup.removeClass('is-active');
-                        pendingUrl = '';
-                    }
 
-                    // 구글 평점/리뷰 버튼 → 구글맵
-                    $(document).on('click', '.btn-google', function(e){
-                        e.preventDefault();
-                        openCfPopup(GOOGLE_MAPS_URL, '구글맵으로 이동할까요?');
-                    });
-                    // 최저가 예약 버튼 → 구글 호텔(최저가)
-                    $(document).on('click', '.btn-reservate', function(e){
-                        e.preventDefault();
-                        openCfPopup(GOOGLE_HOTELS_URL, '구글 호텔로 이동할까요?');
+                    // 위생 경보 / 오감 지옥 태그 클릭 → 스크롤 + 탭 자동 선택
+                    $(document).on('click', '.sect.disappear .tags .tags-item', function(){
+                        activateRiskTab($(this).text());
                     });
 
-                    // 팝업 버튼
-                    $cfPopup.on('click', '[data-cf-dismiss]', closeCfPopup);
-                    $cfPopup.on('click', '.cf-go', function(){
-                        if (pendingUrl) window.open(pendingUrl, '_blank', 'noopener');
-                        closeCfPopup();
+                    // 분석 리뷰 200개 버튼 → review.html (전체/전체)
+                    $(document).on('click', '.btn-audit', function(e){
+                        e.preventDefault();
+                        window.location.href = './review.html';
                     });
-                    // ESC로 닫기
-                    $(document).on('keydown', function(e){
-                        if (e.key === 'Escape' && $cfPopup.hasClass('is-active')) closeCfPopup();
+
+                    // 요약 표의 n건 링크 → review.html (위생경보 + 상태 필터)
+                    $(document).on('click', '.summary .table tbody td a', function(e){
+                        e.preventDefault();
+                        var $row = $(this).closest('tr');
+                        var status = $.trim($row.find('.status-item').text()); // 심각 / 경고 / 정상
+                        var qs = '?cat=' + encodeURIComponent('위생경보')
+                               + '&status=' + encodeURIComponent(status);
+                        window.location.href = './review.html' + qs;
                     });
+
+                    // === 6대 리스크 레이더 차트: 얼굴/라벨 클릭 시 탭 변경 ===
+                    try {
+                        var chartLabels = ['위생경보', '오감지옥', '안전그림자', '동선파괴자', '불친절레이더', '시설사기단'];
+                        var canvas = document.getElementById('riskChart');
+                        if (canvas && typeof myChart !== 'undefined') {
+                            canvas.style.cursor = 'pointer';
+                            canvas.addEventListener('click', function(e){
+                                var rect = canvas.getBoundingClientRect();
+                                var x = e.clientX - rect.left;
+                                var y = e.clientY - rect.top;
+                                var items = (myChart.scales && myChart.scales.r && myChart.scales.r._pointLabelItems) || [];
+                                var hitIdx = -1, hitDist = 36; // 클릭 허용 반경
+                                for (var i = 0; i < items.length; i++){
+                                    var dx = x - items[i].x, dy = y - items[i].y;
+                                    var d = Math.sqrt(dx*dx + dy*dy);
+                                    if (d < hitDist){ hitDist = d; hitIdx = i; }
+                                }
+                                if (hitIdx >= 0) {
+                                    activateRiskTab(chartLabels[hitIdx]);
+                                }
+                            });
+                        }
+                    } catch(err){}
 
                     // 위시리스트 버튼
                     $('.btn-wish').on('click', function(e) {

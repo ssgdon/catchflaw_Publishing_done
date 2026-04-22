@@ -39,3 +39,20 @@ select:disabled{background:#fafafa}
 *::placeholder{color:#9e9e9e;}
 
 .blind{position: absolute;width: 1px;height: 1px;margin: -1px;overflow: hidden;padding: 0;border: 0;clip: rect(0,0,0,0)}
+
+/* === Common popup (cf-popup) === */
+.cf-popup{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;}
+.cf-popup.is-active{display:flex;}
+.cf-popup .cf-dimmed{position:absolute;inset:0;background:rgba(0,0,0,0.5);}
+.cf-popup .cf-box{position:relative;width:100%;max-width:320px;padding:28px 20px 20px;border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,0.15);text-align:center;}
+.cf-popup .cf-box .cf-emoji{font-size:32px;line-height:1;margin-bottom:8px;}
+.cf-popup .cf-box .cf-title{font-size:17px;font-weight:700;color:#232323;line-height:1.4;}
+.cf-popup .cf-box .cf-desc{margin-top:8px;font-size:13px;color:#666;line-height:1.5;}
+.cf-popup .cf-box .cf-btns{display:flex;gap:8px;margin-top:22px;}
+.cf-popup .cf-box .cf-btns button{flex:1;height:46px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:0;}
+.cf-popup .cf-box .cf-btns .cf-close{background:#f2f2f2;color:#555;}
+.cf-popup .cf-box .cf-btns .cf-close:hover{background:#e8e8e8;}
+.cf-popup .cf-box .cf-btns .cf-go{background:#8D5BFD;color:#fff;}
+.cf-popup .cf-box .cf-btns .cf-go:hover{background:#7a48ea;}
+.cf-popup .cf-box .cf-btns .cf-ok{background:#8D5BFD;color:#fff;}
+.cf-popup .cf-box .cf-btns .cf-ok:hover{background:#7a48ea;}
